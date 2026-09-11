@@ -9,6 +9,7 @@ import { Modal } from '../components/Modal';
 
 export const LocalGame: React.FC = () => {
   const navigate = useNavigate();
+  const [startingTurn, setStartingTurn] = useState<PlayerSymbol>('X');
   const [board, setBoard] = useState<CellValue[]>(createEmptyBoard());
   const [currentTurn, setCurrentTurn] = useState<PlayerSymbol>('X');
   const [winner, setWinner] = useState<PlayerSymbol | 'draw' | null>(null);
@@ -50,9 +51,18 @@ export const LocalGame: React.FC = () => {
     setCurrentTurn((prev) => (prev === 'X' ? 'O' : 'X'));
   };
 
+  const handleNextMatch = () => {
+    const nextTurn = startingTurn === 'X' ? 'O' : 'X';
+    setStartingTurn(nextTurn);
+    setBoard(createEmptyBoard());
+    setCurrentTurn(nextTurn);
+    setWinner(null);
+    setWinningLine(null);
+  };
+
   const handleReset = () => {
     setBoard(createEmptyBoard());
-    setCurrentTurn('X');
+    setCurrentTurn(startingTurn);
     setWinner(null);
     setWinningLine(null);
   };
@@ -170,7 +180,7 @@ export const LocalGame: React.FC = () => {
           </div>
 
           <div className="pt-2 flex flex-col sm:flex-row gap-2">
-            <Button variant="cyan" size="md" className="flex-1" onClick={handleReset}>
+            <Button variant="cyan" size="md" className="flex-1" onClick={handleNextMatch}>
               Play Again
             </Button>
             <Button

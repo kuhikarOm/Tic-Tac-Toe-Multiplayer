@@ -19,6 +19,8 @@ export const Cell: React.FC<CellProps> = ({
   isWinningCell,
   previewSymbol,
 }) => {
+  const isInteractive = !disabled && value === null;
+
   return (
     <button
       id={`cell-${index}`}
@@ -27,14 +29,29 @@ export const Cell: React.FC<CellProps> = ({
       disabled={disabled || value !== null}
       aria-label={`Cell ${index + 1}, ${value ? `Filled with ${value}` : 'Empty'}`}
       className={clsx(
-        'group relative w-full aspect-square flex items-center justify-center rounded-2xl transition-all duration-300 select-none overflow-hidden',
-        // Background and border
-        isWinningCell
-          ? 'bg-neon-yellow/15 border-2 border-neon-yellow shadow-[0_0_30px_rgba(255,230,0,0.5)] scale-[1.03] z-10'
-          : value !== null
-          ? 'bg-surface/90 border border-surface-border/80 shadow-md'
-          : 'bg-surface/50 border border-surface-border/40 hover:bg-surface-hover/80 hover:border-gray-500/50 hover:shadow-lg',
-        disabled && value === null && 'cursor-not-allowed opacity-70'
+        'group relative w-full aspect-square flex items-center justify-center rounded-2xl transition-all duration-200 select-none overflow-hidden outline-none',
+        // Winning cell highlight
+        isWinningCell &&
+          'bg-neon-yellow/25 border-2 border-neon-yellow shadow-[0_0_35px_rgba(255,230,0,0.65)] scale-[1.04] z-20',
+        // Filled cell (not winning)
+        !isWinningCell &&
+          value !== null &&
+          'bg-[#161a2e] border-2 border-[#333a5e] shadow-[0_4px_16px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.1)]',
+        // Empty cell during interactive player's turn
+        !isWinningCell &&
+          value === null &&
+          isInteractive &&
+          clsx(
+            'bg-[#171b30] border-2 border-[#384069] shadow-[0_4px_12px_rgba(0,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.08)] cursor-pointer',
+            previewSymbol === 'X'
+              ? 'hover:border-neon-cyan hover:bg-[#1e2442] hover:shadow-[0_0_24px_rgba(0,240,255,0.35)] hover:scale-[1.02]'
+              : 'hover:border-neon-magenta hover:bg-[#1e2442] hover:shadow-[0_0_24px_rgba(255,0,127,0.35)] hover:scale-[1.02]'
+          ),
+        // Empty cell when disabled / waiting for opponent
+        !isWinningCell &&
+          value === null &&
+          !isInteractive &&
+          'bg-[#131627] border-2 border-[#2b3152] shadow-[0_2px_8px_rgba(0,0,0,0.3),inset_0_1px_1px_rgba(255,255,255,0.05)] cursor-not-allowed'
       )}
     >
       {/* Symbol: X */}
@@ -56,9 +73,9 @@ export const Cell: React.FC<CellProps> = ({
         </div>
       )}
 
-      {/* Hover preview if empty and enabled */}
-      {!value && !disabled && previewSymbol && (
-        <div className="opacity-0 group-hover:opacity-30 transition-opacity duration-200 flex items-center justify-center w-3/5 h-3/5">
+      {/* Hover preview if empty and interactive */}
+      {isInteractive && previewSymbol && (
+        <div className="opacity-0 group-hover:opacity-40 transition-opacity duration-200 flex items-center justify-center w-3/5 h-3/5">
           {previewSymbol === 'X' ? (
             <svg viewBox="0 0 100 100" className="w-full h-full stroke-neon-cyan stroke-[12] stroke-linecap-round">
               <line x1="20" y1="20" x2="80" y2="80" />

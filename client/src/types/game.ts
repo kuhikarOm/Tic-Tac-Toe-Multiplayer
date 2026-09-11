@@ -14,6 +14,7 @@ export interface Room {
   winner: PlayerSymbol | 'draw' | null;
   winningLine: number[] | null;
   rematchRequestedBy: string[]; // List of player IDs
+  startingTurn?: PlayerSymbol;
   createdAt?: number;
 }
 

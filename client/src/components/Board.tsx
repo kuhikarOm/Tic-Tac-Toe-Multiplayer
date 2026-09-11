@@ -18,12 +18,12 @@ export const Board: React.FC<BoardProps> = ({
   previewSymbol,
 }) => {
   return (
-    <div className="relative w-full max-w-[360px] sm:max-w-[420px] aspect-square mx-auto p-3.5 sm:p-4 rounded-3xl glass-panel shadow-glass border border-white/10">
+    <div className="relative w-full max-w-[360px] sm:max-w-[420px] aspect-square mx-auto p-3.5 sm:p-4 rounded-3xl bg-[#0d0f1c]/95 border-2 border-[#2e3458] shadow-[0_16px_48px_rgba(0,0,0,0.7),0_0_30px_rgba(0,240,255,0.08),inset_0_1px_2px_rgba(255,255,255,0.1)] backdrop-blur-xl">
       {/* Background glow ambient */}
-      <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-neon-cyan/5 via-transparent to-neon-magenta/5 pointer-events-none" />
+      <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-neon-cyan/10 via-transparent to-neon-magenta/10 pointer-events-none" />
 
       {/* Grid of 9 cells */}
-      <div className="relative grid grid-cols-3 grid-rows-3 gap-2.5 sm:gap-3.5 w-full h-full">
+      <div className="relative grid grid-cols-3 grid-rows-3 gap-2.5 sm:gap-3.5 w-full h-full p-0.5">
         {board.map((cellValue, index) => (
           <Cell
             key={index}

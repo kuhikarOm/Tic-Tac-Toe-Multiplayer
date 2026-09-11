@@ -28,6 +28,7 @@ export interface RoomState {
   winningLine: number[] | null;
   rematchRequestedBy: string[]; // Player IDs
   moves: MoveRecord[];
+  startingTurn?: PlayerSymbol;
   createdAt: number;
   startedAt?: number;
   endedAt?: number;

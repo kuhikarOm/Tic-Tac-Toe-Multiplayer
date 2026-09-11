@@ -89,16 +89,30 @@ async function runTest() {
     });
   });
 
-  await new Promise<void>((resolve) => {
+  await new Promise<void>((resolve, reject) => {
     const onState = (room: any) => {
       if (room.status === 'playing' && room.board.every((c: any) => c === null)) {
         console.log(`✅ Game restarted! Status: ${room.status}. Current Turn: ${room.currentTurn}. Board reset.`);
         socketB.off('room_state', onState);
+        if (room.currentTurn !== 'O') {
+          reject(new Error(`Expected currentTurn to be 'O' for Bob on first rematch, got ${room.currentTurn}`));
+          return;
+        }
+        console.log(`✅ Verified: Bob (Player B) has the first move on rematch!`);
         resolve();
       }
     };
     socketB.on('room_state', onState);
     socketB.emit('request_rematch', { roomId, playerId: 'player_bob' });
+  });
+
+  // Test that Bob can make the first move of the rematch
+  await new Promise<void>((resolve) => {
+    socketB.once('room_state', (room: any) => {
+      console.log(`✅ Bob placed first move at cell 4. Current turn now: ${room.currentTurn}`);
+      resolve();
+    });
+    socketB.emit('make_move', { roomId, cellIndex: 4 });
   });
 
   // 4. Test Third player rejection (Room is Full)

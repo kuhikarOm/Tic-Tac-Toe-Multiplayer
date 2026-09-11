@@ -46,6 +46,7 @@ export class GameService {
         players: [newPlayer],
         board: createEmptyBoard(),
         currentTurn: 'X',
+        startingTurn: 'X',
         status: 'waiting',
         winner: null,
         winningLine: null,
@@ -213,7 +214,9 @@ export class GameService {
     // If both players have agreed to rematch
     if (room.rematchRequestedBy.length >= 2) {
       room.board = createEmptyBoard();
-      room.currentTurn = 'X';
+      const nextStartingTurn: PlayerSymbol = room.startingTurn === 'X' ? 'O' : 'X';
+      room.startingTurn = nextStartingTurn;
+      room.currentTurn = nextStartingTurn;
       room.status = 'playing';
       room.winner = null;
       room.winningLine = null;
