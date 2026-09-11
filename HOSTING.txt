@@ -1,0 +1,1 @@
+Please see DEPLOYMENT.txt in the root directory for the complete step-by-step guide on hosting on Vercel, Render, and MongoDB Atlas.

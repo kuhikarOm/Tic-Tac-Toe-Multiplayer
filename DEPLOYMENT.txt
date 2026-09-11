@@ -1,0 +1,166 @@
+================================================================================
+           TICTACTOE MULTIPLAYER - COMPLETE HOSTING GUIDE
+                     (Vercel + Render + MongoDB Atlas)
+================================================================================
+
+This guide walks you through deploying your full-stack Tic-Tac-Toe multiplayer
+game to the cloud using:
+  - Frontend: Vercel (React + Vite + TailwindCSS)
+  - Backend:  Render (Node.js + Express + Socket.IO WebSockets)
+  - Database: MongoDB Atlas (Cloud Database)
+
+--------------------------------------------------------------------------------
+TABLE OF CONTENTS
+--------------------------------------------------------------------------------
+1. Prerequisites & Git Push
+2. MongoDB Atlas Setup (Cloud Database)
+3. Backend Deployment on Render
+4. Frontend Deployment on Vercel
+5. Connecting Frontend & Backend (Final Sync)
+6. Troubleshooting & Tips
+
+================================================================================
+1. PREREQUISITES & GIT PUSH
+================================================================================
+
+Make sure your repository is committed and pushed to GitHub:
+
+  git init
+  git add .
+  git commit -m "Complete multiplayer tic-tac-toe"
+  git branch -M main
+  git remote add origin https://github.com/<YOUR_USERNAME>/<REPO_NAME>.git
+  git push -u origin main
+
+================================================================================
+2. MONGODB ATLAS SETUP (FREE CLOUD DATABASE)
+================================================================================
+
+1. Go to https://www.mongodb.com/cloud/atlas and create a free account.
+2. Create a new project and build a FREE Shared Cluster (M0 Sandbox).
+3. Under "Security" -> "Database Access":
+   - Create a database user (e.g. username: `admin`, password: `<strong-password>`).
+   - Give read/write privileges (`Read and write to any database`).
+4. Under "Security" -> "Network Access":
+   - Click "Add IP Address".
+   - Select "Allow Access from Anywhere" (`0.0.0.0/0`) so Render can connect.
+5. Under "Database" -> "Deployments":
+   - Click "Connect" on your cluster.
+   - Choose "Drivers" (Node.js).
+   - Copy the connection string. It looks like:
+     mongodb+srv://<username>:<password>@cluster0.xxxx.mongodb.net/tictactoe?retryWrites=true&w=majority
+   - Replace `<password>` with your database user password, and make sure
+     the database name is specified (e.g. `/tictactoe`).
+
+================================================================================
+3. BACKEND DEPLOYMENT ON RENDER (WEB SERVICE)
+================================================================================
+
+1. Go to https://render.com and log in (easiest with your GitHub account).
+2. Click "New +" -> "Web Service".
+3. Select your GitHub repository.
+4. Fill in the settings:
+   - Name:             `tictactoe-server` (or any unique name)
+   - Region:           Choose the region closest to you (e.g., Oregon / Frankfurt / Singapore)
+   - Branch:           `main`
+   - Root Directory:   `server`
+   - Runtime:          `Node`
+   - Build Command:    `npm install && npm run build`
+   - Start Command:    `npm run start`
+   - Instance Type:    `Free`
+
+5. Add Environment Variables (click "Advanced" -> "Add Environment Variable"):
+   Key:             Value:
+   ---------------------------------------------------------------------------
+   NODE_ENV         production
+   MONGODB_URI      mongodb+srv://<username>:<password>@cluster0.xxxx.mongodb.net/tictactoe?retryWrites=true&w=majority
+   CLIENT_URL       *   (you can change this to your Vercel URL in step 5)
+
+   * Note: Render automatically assigns a `PORT` variable. The server code
+     reads `process.env.PORT` automatically.
+
+6. Click "Create Web Service".
+7. Wait 2-3 minutes for the build to complete.
+   When deployed, Render will provide your Backend URL:
+   Example: `https://tictactoe-server.onrender.com`
+   Test it in your browser by opening:
+   `https://tictactoe-server.onrender.com/health`
+   You should see: `{"status":"ok", ...}`
+
+================================================================================
+4. FRONTEND DEPLOYMENT ON VERCEL
+================================================================================
+
+1. Go to https://vercel.com and sign in with GitHub.
+2. Click "Add New..." -> "Project".
+3. Import your GitHub repository.
+4. In the Project Configuration screen:
+   - Project Name:     `tictactoe-client` (or any name)
+   - Framework Preset: `Vite`
+   - Root Directory:   Click "Edit" and choose: `client`
+   - Build Command:    `npm run build` (default)
+   - Output Directory: `dist` (default)
+   - Install Command:  `npm install` (default)
+
+5. Expand "Environment Variables" and add:
+   Key:              Value:
+   ---------------------------------------------------------------------------
+   VITE_SERVER_URL   https://tictactoe-server.onrender.com
+   (Paste your actual Render backend URL without trailing slash)
+
+6. Click "Deploy".
+7. Vercel will build and deploy your frontend in ~30 seconds.
+   Your app is now live at:
+   Example: `https://tictactoe-client.vercel.app`
+
+   * Note: We have already added `client/vercel.json` with rewrite rules so that
+     direct URLs like `/game/ROOM-1` and `/leaderboard` won't return 404 on refresh.
+
+================================================================================
+5. CONNECTING FRONTEND & BACKEND (FINAL SYNC)
+================================================================================
+
+Now that both URLs are known:
+
+1. Copy your Vercel URL (e.g. `https://tictactoe-client.vercel.app`).
+2. Go back to Render Dashboard -> your `tictactoe-server` -> "Environment".
+3. Update `CLIENT_URL`:
+   Change from `*` to: `https://tictactoe-client.vercel.app`
+4. Click "Save Changes". Render will automatically restart with the new CORS origin.
+
+================================================================================
+6. TESTING & VERIFICATION CHECKLIST
+================================================================================
+
+[ ] 1. Open your Vercel URL in two different browser windows (or one incognito).
+[ ] 2. On Window A: enter username "Alice", click "+ Generate Code", click "Enter Match".
+[ ] 3. On Window B: enter username "Bob", enter the same Room Code, click "Enter Match".
+[ ] 4. Check that both players see each other live.
+[ ] 5. Play moves back and forth: verify real-time turns, winning highlight, and draw.
+[ ] 6. Test rematch: click "Rematch" on both windows to start a fresh game.
+[ ] 7. Check the Leaderboard: verify Alice and Bob appear with points recorded in MongoDB Atlas!
+
+================================================================================
+7. TROUBLESHOOTING & COMMON ISSUES
+================================================================================
+
+Q1: Render free tier takes 30-50 seconds to respond on first load.
+A1: Render's free tier spins down web services after 15 minutes of inactivity.
+    The first connection after idle takes ~30 seconds to wake up. Once awake,
+    WebSockets are instant. For production 24/7 uptime, you can upgrade Render
+    or use a free pinging service (like Cron-Job.org or UptimeRobot) to ping
+    `https://your-backend.onrender.com/health` every 10 minutes.
+
+Q2: Socket connection fails (CORS error or 400 Bad Request).
+A2: Check two things:
+    1. Vercel `VITE_SERVER_URL` must match your Render URL (using https://, no trailing /).
+    2. Render `CLIENT_URL` must match your Vercel URL (or set to `*` for open access).
+
+Q3: Refreshing `/game/ABC` or `/leaderboard` on Vercel gives 404.
+A3: The `client/vercel.json` file handles this by rewriting all routes to
+    `/index.html`. Make sure `client/vercel.json` is committed and pushed to Git.
+
+Q4: MongoDB connection times out or fails on Render.
+A4: In MongoDB Atlas Network Access, ensure IP `0.0.0.0/0` is added to allow
+    connections from anywhere. Also verify your username/password in `MONGODB_URI`.
+================================================================================
